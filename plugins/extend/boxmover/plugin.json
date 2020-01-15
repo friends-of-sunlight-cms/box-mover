@@ -1,0 +1,14 @@
+{
+    "name": "BoxMover",
+    "description": "Facilitate moving boxes between themes",
+    "version": "1.0",
+    "api": "^8.0",
+    "url": "https://jdanek.eu/",
+    "class": "BoxMoverPlugin",
+    "langs": {
+        "boxmover": "Resources/languages/"
+    },
+    "events.admin": [
+        ["admin.mod.content-boxes.after", "$this::afterBoxList"]
+    ]
+}
