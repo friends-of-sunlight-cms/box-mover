@@ -1,5 +1,5 @@
-Box Mover
-#########
+Box Mover Plugin
+################
 
 Helps move boxes between templates
 
