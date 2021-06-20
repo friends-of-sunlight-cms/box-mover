@@ -12,7 +12,7 @@ use Sunlight\Xsrf;
 /**
  * Class BoxMoverPlugin
  *
- * @author Jirka Danìk <jdanek.eu>
+ * @author Jirka DanÄ›k <jdanek.eu>
  */
 class BoxMoverPlugin extends ExtendPlugin
 {
