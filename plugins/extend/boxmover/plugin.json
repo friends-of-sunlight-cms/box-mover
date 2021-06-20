@@ -1,4 +1,5 @@
 {
+    "$schema": "../../../system/schema/extend.json",
     "name": "BoxMover",
     "description": "Facilitate moving boxes between themes",
     "version": "1.0",
