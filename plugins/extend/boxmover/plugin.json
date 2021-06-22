@@ -10,6 +10,6 @@
         "boxmover": "Resources/languages/"
     },
     "events.admin": [
-        ["admin.mod.content-boxes.after", "$this::afterBoxList"]
+        {"event": "admin.mod.content-boxes.after", "method": "afterBoxList"}
     ]
 }
