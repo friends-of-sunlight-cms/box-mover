@@ -1,6 +1,6 @@
 <?php
 
-namespace SunlightExtend\BoxMover;
+namespace SunlightExtend\Boxmover;
 
 use Sunlight\Database\Database as DB;
 use Sunlight\Plugin\ExtendPlugin;
