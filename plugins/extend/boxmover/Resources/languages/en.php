@@ -1,9 +1,9 @@
 <?php
 
-return array(
+return [
     'caption' => 'Bulk moving boxes to the active theme',
     'move.to.theme' => 'Move to active theme',
     'convert.slots' => 'Convert non-existent slots',
     'row.title' => 'Title',
     'submit' => 'Move',
-);
+];

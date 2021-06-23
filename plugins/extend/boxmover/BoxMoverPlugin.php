@@ -20,12 +20,12 @@ class BoxMoverPlugin extends ExtendPlugin
     protected $activeTemplate;
 
     /** @var array */
-    protected $boxes = array();
+    protected $boxes = [];
 
     /**
      * @param $args
      */
-    function afterBoxList($args)
+    public function afterBoxList($args): void
     {
         // get active template
         $this->activeTemplate = Template::getCurrent();
@@ -86,7 +86,7 @@ class BoxMoverPlugin extends ExtendPlugin
     /**
      * @return string
      */
-    function createLayoutSelect()
+    public function createLayoutSelect(): string
     {
         $layouts = $this->activeTemplate->getLayouts();
 
@@ -102,7 +102,7 @@ class BoxMoverPlugin extends ExtendPlugin
     /**
      * Moving boxes to active template
      */
-    function moveSelectedBoxes()
+    public function moveSelectedBoxes(): void
     {
         // get layout and slots
         $active_template_id = $this->activeTemplate->getId();
@@ -112,7 +112,7 @@ class BoxMoverPlugin extends ExtendPlugin
         if (count($slots) > 0) {
             $flipped_slots = array_flip($slots);
 
-            $prepare = array();
+            $prepare = [];
             $ids = array_keys($_POST['move']);
             foreach ($ids as $id) {
                 if (isset($this->boxes[$id])) {
