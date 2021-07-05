@@ -30,7 +30,7 @@ class BoxMoverPlugin extends ExtendPlugin
         // get active template
         $this->activeTemplate = Template::getCurrent();
         // load all boxes
-        $this->boxes = DB::queryRows("SELECT id, title, template, layout, slot FROM " . _box_table, 'id');
+        $this->boxes = DB::queryRows("SELECT id, title, template, layout, slot FROM " . DB::table('box'), 'id');
 
         // process POST
         if (isset($_POST['move_boxes_submit'], $_POST['move']) && count($_POST['move']) > 0) {
@@ -135,7 +135,7 @@ class BoxMoverPlugin extends ExtendPlugin
             // save
             if (count($prepare) > 0) {
                 foreach ($prepare as $k => $v) {
-                    DB::update(_box_table, 'id=' . $k, $v);
+                    DB::update('box', 'id=' . $k, $v);
                 }
                 // redirect
                 Response::redirect('index.php?p=content-boxes&moved');
