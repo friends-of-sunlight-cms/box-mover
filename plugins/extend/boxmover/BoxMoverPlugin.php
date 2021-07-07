@@ -42,7 +42,7 @@ class BoxMoverPlugin extends ExtendPlugin
             <caption><h2>" . _lang('boxmover.caption') . "</h2></caption>
                 <thead>
                     <tr>
-                        <th><input type='checkbox' class='selectall'></th>
+                        <th><input type='checkbox' class='selectall' checked></th>
                         <th>" . _lang('boxmover.row.title') . "</th>
                     </tr>
                 </thead>
@@ -50,7 +50,7 @@ class BoxMoverPlugin extends ExtendPlugin
 
         foreach ($this->boxes as $box) {
             $output .= "<tr>
-                            <td><input id='move_" . $box['id'] . "' type='checkbox' name='move[" . $box['id'] . "]' value='1'></td>
+                            <td><input id='move_" . $box['id'] . "' type='checkbox' name='move[" . $box['id'] . "]' value='1' checked></td>
                             <td><label for='move_" . $box['id'] . "'>" . $box['title'] . "</label></td>
                         </tr>";
         }
