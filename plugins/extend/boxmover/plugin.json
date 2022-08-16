@@ -3,7 +3,9 @@
     "name": "BoxMover",
     "description": "Facilitate moving boxes between themes",
     "version": "1.0",
-    "api": "^8.0",
+    "environment": {
+        "system": "^8.0"
+    },
     "url": "https://jdanek.eu/",
     "class": "BoxMoverPlugin",
     "langs": {
