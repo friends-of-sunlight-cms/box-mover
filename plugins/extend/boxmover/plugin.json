@@ -9,7 +9,7 @@
     "url": "https://github.com/friends-of-sunlight-cms/",
     "class": "BoxMoverPlugin",
     "langs": {
-        "boxmover": "Resources/languages/"
+        "boxmover": "resources/languages/"
     },
     "events.admin": [
         {"event": "admin.mod.content-boxes.after", "method": "afterBoxList"}
