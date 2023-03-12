@@ -63,7 +63,7 @@ class BoxMoverPlugin extends ExtendPlugin
                         <div class='right'>"
 
             . "<div class='left'>"
-            . "<input type='text' value='" . $this->activeTemplate->getCamelId() . "' disabled> "
+            . "<input type='text' value='" . $this->activeTemplate->getId() . "' disabled> "
             . $this->createLayoutSelect() . "<br>"
             . "<input id='convert_slots' type='checkbox' name='convert_slots' value='1' checked><label for='convert_slots'>" . _lang('boxmover.convert.slots') . "</label>"
             . "</div>"
