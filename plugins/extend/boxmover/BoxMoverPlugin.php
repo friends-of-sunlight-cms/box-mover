@@ -9,11 +9,6 @@ use Sunlight\Template;
 use Sunlight\Util\Response;
 use Sunlight\Xsrf;
 
-/**
- * Class BoxMoverPlugin
- *
- * @author Jirka Daněk <jdanek.eu>
- */
 class BoxMoverPlugin extends ExtendPlugin
 {
     /** @var TemplatePlugin */
@@ -83,9 +78,6 @@ class BoxMoverPlugin extends ExtendPlugin
         $args['output'] .= $output;
     }
 
-    /**
-     * @return string
-     */
     public function createLayoutSelect(): string
     {
         $layouts = $this->activeTemplate->getLayouts();
