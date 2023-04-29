@@ -6,4 +6,6 @@ return [
     'convert.slots' => 'Konvertovat neexistující sloty',
     'row.title' => 'Titulek',
     'submit' => 'Přesunout',
+    'current.location' => 'Aktuální umístění',
+    'no.boxes' => 'Žádné boxy k přesunu',
 ];
