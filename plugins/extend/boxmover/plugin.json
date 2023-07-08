@@ -2,7 +2,7 @@
     "$schema": "../../../system/schema/extend.json",
     "name": "BoxMover",
     "description": "Facilitate moving boxes between themes",
-    "version": "0.9.1",
+    "version": "0.9.2",
     "environment": {
         "system": "^8.0"
     },
