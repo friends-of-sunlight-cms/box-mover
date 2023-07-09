@@ -1,19 +1,19 @@
 {
-    "$schema": "../../../system/schema/extend.json",
-    "name": "BoxMover",
-    "description": "Facilitate moving boxes between themes",
-    "version": "0.9.2",
-    "environment": {
-        "system": "^8.0"
-    },
-    "authors": [
-        {"name": "Friends of Sunlight CMS", "url": "https://github.com/friends-of-sunlight-cms/"}
-    ],
-    "class": "BoxMoverPlugin",
-    "langs": {
-        "boxmover": "lang"
-    },
-    "events.admin": [
-        {"event": "admin.mod.content-boxes.after", "method": "afterBoxList"}
-    ]
+  "$schema": "../../../system/schema/extend.json",
+  "name": "BoxMover",
+  "description": "Facilitate moving boxes between themes",
+  "version": "0.9.2",
+  "environment": {
+    "system": "^8.0"
+  },
+  "authors": [
+    {"name": "Friends of Sunlight CMS", "url": "https://github.com/friends-of-sunlight-cms/"}
+  ],
+  "class": "BoxMoverPlugin",
+  "langs": {
+    "boxmover": "lang"
+  },
+  "events.admin": [
+    {"event": "admin.mod.content-boxes.after", "method": "afterBoxList"}
+  ]
 }

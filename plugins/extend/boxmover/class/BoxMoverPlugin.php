@@ -55,7 +55,7 @@ class BoxMoverPlugin extends ExtendPlugin
                         <tbody>";
 
         if ($hasMovableBoxes) {
-            
+
             // render boxes
             foreach ($this->boxes as $box) {
                 $boxParent = Core::$pluginManager->getPlugins()->getTemplate($box['template']);
