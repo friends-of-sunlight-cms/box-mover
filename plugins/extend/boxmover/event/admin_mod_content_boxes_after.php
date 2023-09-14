@@ -8,23 +8,26 @@ use Sunlight\Template;
 use Sunlight\Util\Response;
 use Sunlight\Xsrf;
 
-return function (array $args) {
-    // get active template
-    $activeTemplate = Template::getCurrent();
-    // load all boxes
-    $boxes = DB::queryRows(
-        'SELECT id, title, template, layout, slot FROM ' . DB::table('box')
-        . ' WHERE template!=' . DB::val($activeTemplate->getName()),
-        'id'
-    );
-    $hasMovableBoxes = !empty($boxes);
+return new class {
 
-    // process POST
-    if (isset($_POST['move_boxes_submit'], $_POST['move']) && count($_POST['move']) > 0) {
-        moveSelectedBoxes($activeTemplate, $boxes);
-    }
+    public function __invoke(array $args)
+    {
+        // get active template
+        $activeTemplate = Template::getCurrent();
+        // load all boxes
+        $boxes = DB::queryRows(
+            'SELECT id, title, template, layout, slot FROM ' . DB::table('box')
+            . ' WHERE template!=' . DB::val($activeTemplate->getName()),
+            'id'
+        );
+        $hasMovableBoxes = !empty($boxes);
 
-    $tableHead = $hasMovableBoxes ? '<thead>
+        // process POST
+        if (isset($_POST['move_boxes_submit'], $_POST['move']) && count($_POST['move']) > 0) {
+            $this->moveSelectedBoxes($activeTemplate, $boxes);
+        }
+
+        $tableHead = $hasMovableBoxes ? '<thead>
                     <tr>
                         <th><input type="checkbox" class="selectall" onchange="var that=this;$(\'table.boxmover-list input[type=checkbox][name^=move]\').each(function() {this.checked=that.checked;});" checked></th>
                         <th>' . _lang('boxmover.row.title') . '</th>
@@ -32,116 +35,118 @@ return function (array $args) {
                     </tr>
                 </thead>' : '';
 
-    // render table
-    $output = "<form id='boxmover_form' name='boxmover_form' action='' method='post'>
+        // render table
+        $output = "<form id='boxmover_form' name='boxmover_form' action='' method='post'>
                     <table class='boxmover-list box-list list list-hover list-max'>
                         <caption><h2>" . _lang('boxmover.caption') . "</h2></caption>
                         " . $tableHead . "
                         <tbody>";
 
-    if ($hasMovableBoxes) {
+        if ($hasMovableBoxes) {
 
-        // render boxes
-        foreach ($boxes as $box) {
-            $boxParent = Core::$pluginManager->getPlugins()->getTemplate($box['template']);
+            // render boxes
+            foreach ($boxes as $box) {
+                $boxParent = Core::$pluginManager->getPlugins()->getTemplate($box['template']);
 
-            $output .= '<tr>
+                $output .= '<tr>
                                 <td><input id="move_' . $box['id'] . '" type="checkbox" name="move[' . $box['id'] . ']" value="1" checked></td>
                                 <td><label for="move_' . $box['id'] . '">' . $box['title'] . '</label></td>
                                 <td><label for="move_' . $box['id'] . '">'
-                . $boxParent->getCamelCasedName()
-                . _e(sprintf(' (%s - %s)', $boxParent->getLayoutLabel($box['layout']), $boxParent->getSlotLabel($box['layout'], $box['slot'])))
-                . '</label></td>
+                    . $boxParent->getCamelCasedName()
+                    . _e(sprintf(' (%s - %s)', $boxParent->getLayoutLabel($box['layout']), $boxParent->getSlotLabel($box['layout'], $box['slot'])))
+                    . '</label></td>
                         </tr>';
-        }
+            }
 
-        $output .= '</tbody>';
-        $output .= '<tfoot> 
+            $output .= '</tbody>';
+            $output .= '<tfoot> 
                 <tr>
                     <td colspan="3">
                         <div class="right">
                             <div class="left">
-                                <input type="text" value="' . $activeTemplate->getName() . '" disabled> ' . createLayoutSelect($activeTemplate) . '<br>
+                                <input type="text" value="' . $activeTemplate->getName() . '" disabled> ' . $this->createLayoutSelect($activeTemplate) . '<br>
                                 <input id="convert_slots" type="checkbox" name="convert_slots" value="1" checked>
                                 <label for="convert_slots">' . _lang('boxmover.convert.slots') . '</label>
                             </div>
                             <button type="submit" name="move_boxes_submit" onclick="return Sunlight.confirm();">
                                 <img src="./public/images/icons/action.png" alt="move" class="icon"> '
-            . _lang('boxmover.submit')
-            . '</button><br>
+                . _lang('boxmover.submit')
+                . '</button><br>
                         </div>
                     </td>
                 </tr>
             </tfoot>';
-    } else {
-        $output .= '<tr><td colspan="3">' . Message::warning(_lang('boxmover.no.boxes')) . '</td></tr>';
+        } else {
+            $output .= '<tr><td colspan="3">' . Message::warning(_lang('boxmover.no.boxes')) . '</td></tr>';
+        }
+
+        $output .= '</table>';
+        $output .= Xsrf::getInput();
+        $output .= '</form>';
+
+        $args['output'] .= $output;
     }
 
-    $output .= '</table>';
-    $output .= Xsrf::getInput();
-    $output .= '</form>';
 
-    $args['output'] .= $output;
-};
+    public function createLayoutSelect(TemplatePlugin $activeTemplate): string
+    {
+        $layouts = $activeTemplate->getLayouts();
 
-function createLayoutSelect(TemplatePlugin $activeTemplate): string
-{
-    $layouts = $activeTemplate->getLayouts();
+        $output = '<select name="layout">';
+        foreach ($layouts as $layout) {
+            $output .= '<option value="' . $layout . '">'
+                . _lang('admin.content.layout') . ": " . $activeTemplate->getLayoutLabel($layout)
+                . '</option>';
+        }
+        $output .= '</select>';
 
-    $output = '<select name="layout">';
-    foreach ($layouts as $layout) {
-        $output .= '<option value="' . $layout . '">'
-            . _lang('admin.content.layout') . ": " . $activeTemplate->getLayoutLabel($layout)
-            . '</option>';
+        return $output;
     }
-    $output .= '</select>';
 
-    return $output;
-}
+    /**
+     * Moving boxes to active template
+     */
+    public function moveSelectedBoxes(TemplatePlugin $activeTemplate, array $boxes): void
+    {
+        // get layout and slots
+        $active_template_id = $activeTemplate->getName();
+        $selected_layout = DB::esc($_POST['layout']);
+        $slots = $activeTemplate->getSlots($selected_layout);
 
-/**
- * Moving boxes to active template
- */
-function moveSelectedBoxes(TemplatePlugin $activeTemplate, array $boxes): void
-{
-    // get layout and slots
-    $active_template_id = $activeTemplate->getName();
-    $selected_layout = DB::esc($_POST['layout']);
-    $slots = $activeTemplate->getSlots($selected_layout);
+        if (count($slots) > 0) {
+            $flipped_slots = array_flip($slots);
 
-    if (count($slots) > 0) {
-        $flipped_slots = array_flip($slots);
+            $prepare = [];
+            $ids = array_keys($_POST['move']);
+            foreach ($ids as $id) {
+                if (isset($boxes[$id])) {
+                    // copy data
+                    $prepare[$id] = $boxes[$id];
 
-        $prepare = [];
-        $ids = array_keys($_POST['move']);
-        foreach ($ids as $id) {
-            if (isset($boxes[$id])) {
-                // copy data
-                $prepare[$id] = $boxes[$id];
+                    // remove unused
+                    unset($prepare[$id]['id'], $prepare[$id]['title']);
 
-                // remove unused
-                unset($prepare[$id]['id'], $prepare[$id]['title']);
+                    // set new values
+                    $prepare[$id]['template'] = $active_template_id;
+                    $prepare[$id]['layout'] = $selected_layout;
 
-                // set new values
-                $prepare[$id]['template'] = $active_template_id;
-                $prepare[$id]['layout'] = $selected_layout;
-
-                // convert slot if required
-                if (isset($_POST['convert_slots'])) {
-                    if (!isset($flipped_slots[$prepare[$id]['slot']])) {
-                        $prepare[$id]['slot'] = $slots[0];
+                    // convert slot if required
+                    if (isset($_POST['convert_slots'])) {
+                        if (!isset($flipped_slots[$prepare[$id]['slot']])) {
+                            $prepare[$id]['slot'] = $slots[0];
+                        }
                     }
                 }
             }
-        }
 
-        // save
-        if (count($prepare) > 0) {
-            foreach ($prepare as $k => $v) {
-                DB::update('box', 'id=' . $k, $v);
+            // save
+            if (count($prepare) > 0) {
+                foreach ($prepare as $k => $v) {
+                    DB::update('box', 'id=' . $k, $v);
+                }
+                // redirect
+                Response::redirect('index.php?p=content-boxes&moved');
             }
-            // redirect
-            Response::redirect('index.php?p=content-boxes&moved');
         }
     }
-}
+};
