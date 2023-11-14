@@ -1,10 +1,13 @@
 <?php
 
+use Sunlight\Admin\Admin;
 use Sunlight\Core;
 use Sunlight\Database\Database as DB;
 use Sunlight\Message;
-use Sunlight\Plugin\TemplatePlugin;
+use Sunlight\Plugin\TemplateService;
+use Sunlight\Router;
 use Sunlight\Template;
+use Sunlight\Util\Request;
 use Sunlight\Util\Response;
 use Sunlight\Xsrf;
 
@@ -23,128 +26,99 @@ return new class {
         $hasMovableBoxes = !empty($boxes);
 
         // process POST
-        if (isset($_POST['move_boxes_submit'], $_POST['move']) && count($_POST['move']) > 0) {
-            $this->moveSelectedBoxes($activeTemplate, $boxes);
+        if (isset($_POST['move_boxes_submit'], $_POST['slot_uid'], $_POST['move']) && count($_POST['move']) > 0) {
+            $this->moveSelectedBoxes(Request::post('slot_uid'), $boxes);
         }
-
-        $tableHead = $hasMovableBoxes ? '<thead>
-                    <tr>
-                        <th><input type="checkbox" class="selectall" onchange="var that=this;$(\'table.boxmover-list input[type=checkbox][name^=move]\').each(function() {this.checked=that.checked;});" checked></th>
-                        <th>' . _lang('boxmover.row.title') . '</th>
-                        <th>' . _lang('boxmover.current.location') . '</th>
-                    </tr>
-                </thead>' : '';
 
         // render table
-        $output = "<form id='boxmover_form' name='boxmover_form' action='' method='post'>
-                    <table class='boxmover-list box-list list list-hover list-max'>
-                        <caption><h2>" . _lang('boxmover.caption') . "</h2></caption>
-                        " . $tableHead . "
-                        <tbody>";
+        $tableHead = !$hasMovableBoxes ? '' : _buffer(function () { ?>
+            <thead>
+            <tr>
+                <th><input type="checkbox" class="selectall" onchange="var that=this;$('table.boxmover-list input[type=checkbox][name^=move]').each(function() {this.checked=that.checked;});" checked></th>
+                <th><?= _lang('boxmover.row.title') ?></th>
+                <th><?= _lang('boxmover.current.location') ?></th>
+            </tr>
+            </thead>
+        <?php });
 
-        if ($hasMovableBoxes) {
+        $output = _buffer(function () use ($tableHead, $activeTemplate, $hasMovableBoxes, $boxes) { ?>
+            <form id='boxmover_form' name='boxmover_form' action='' method='post'>
+                <table class='boxmover-list box-list list list-hover list-max'>
+                    <caption><h2><?= _lang('boxmover.caption') ?></h2></caption>
+                    <?= $tableHead ?>
+                    <tbody>
 
-            // render boxes
-            foreach ($boxes as $box) {
-                $boxParent = Core::$pluginManager->getPlugins()->getTemplate($box['template']);
+                    <?php if ($hasMovableBoxes): ?>
 
-                $output .= '<tr>
-                                <td><input id="move_' . $box['id'] . '" type="checkbox" name="move[' . $box['id'] . ']" value="1" checked></td>
-                                <td><label for="move_' . $box['id'] . '">' . $box['title'] . '</label></td>
-                                <td><label for="move_' . $box['id'] . '">'
-                    . $boxParent->getCamelCasedName()
-                    . _e(sprintf(' (%s - %s)', $boxParent->getLayoutLabel($box['layout']), $boxParent->getSlotLabel($box['layout'], $box['slot'])))
-                    . '</label></td>
-                        </tr>';
-            }
+                    <?php foreach ($boxes as $box): ?>
+                        <?php $boxParent = Core::$pluginManager->getPlugins()->getTemplate($box['template']); ?>
+                        <tr>
+                            <td><input id="move_<?= $box['id'] ?>" type="checkbox" name="move[<?= $box['id'] ?>]" value="1" checked></td>
+                            <td><label for="move_<?= $box['id'] ?>"><?= $box['title'] ?></label></td>
+                            <td>
+                                <label for="move_<?= $box['id'] ?>">
+                                    <?= $boxParent->getCamelCasedName() ?>
+                                    <?= _e(sprintf(' (%s - %s)', $boxParent->getLayoutLabel($box['layout']), $boxParent->getSlotLabel($box['layout'], $box['slot']))) ?>
+                                </label>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
 
-            $output .= '</tbody>';
-            $output .= '<tfoot> 
-                <tr>
-                    <td colspan="3">
-                        <div class="right">
-                            <div class="left">
-                                <input type="text" value="' . $activeTemplate->getName() . '" disabled> ' . $this->createLayoutSelect($activeTemplate) . '<br>
-                                <input id="convert_slots" type="checkbox" name="convert_slots" value="1" checked>
-                                <label for="convert_slots">' . _lang('boxmover.convert.slots') . '</label>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colspan="3">
+                            <div class="right">
+                                <div class="left">
+                                    <?= Admin::templateLayoutSlotSelect('slot_uid', null, null, '', [$activeTemplate]) ?>
+                                </div>
+                                <button type="submit" name="move_boxes_submit" onclick="return Sunlight.confirm();">
+                                    <img src="<?= Router::path('admin/public/images/icons/action.png') ?>" alt="move" class="icon">
+                                    <?= _lang('boxmover.submit') ?>
+                                </button>
+                                <br>
                             </div>
-                            <button type="submit" name="move_boxes_submit" onclick="return Sunlight.confirm();">
-                                <img src="./public/images/icons/action.png" alt="move" class="icon"> '
-                . _lang('boxmover.submit')
-                . '</button><br>
-                        </div>
-                    </td>
-                </tr>
-            </tfoot>';
-        } else {
-            $output .= '<tr><td colspan="3">' . Message::warning(_lang('boxmover.no.boxes')) . '</td></tr>';
-        }
-
-        $output .= '</table>';
-        $output .= Xsrf::getInput();
-        $output .= '</form>';
+                        </td>
+                    </tr>
+                    </tfoot>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="3"><?= Message::warning(_lang('boxmover.no.boxes')) ?></td>
+                    </tr>
+                <?php endif; ?>
+                </table>
+                <?= Xsrf::getInput() ?>
+            </form>
+        <?php });
 
         $args['output'] .= $output;
-    }
-
-
-    public function createLayoutSelect(TemplatePlugin $activeTemplate): string
-    {
-        $layouts = $activeTemplate->getLayouts();
-
-        $output = '<select name="layout">';
-        foreach ($layouts as $layout) {
-            $output .= '<option value="' . $layout . '">'
-                . _lang('admin.content.layout') . ": " . $activeTemplate->getLayoutLabel($layout)
-                . '</option>';
-        }
-        $output .= '</select>';
-
-        return $output;
     }
 
     /**
      * Moving boxes to active template
      */
-    public function moveSelectedBoxes(TemplatePlugin $activeTemplate, array $boxes): void
+    public function moveSelectedBoxes(string $slotUid, array $boxes): void
     {
-        // get layout and slots
-        $active_template_id = $activeTemplate->getName();
-        $selected_layout = DB::esc($_POST['layout']);
-        $slots = $activeTemplate->getSlots($selected_layout);
+        [$template, $layout, $slot] = explode(':', $slotUid);
 
-        if (count($slots) > 0) {
-            $flipped_slots = array_flip($slots);
-
-            $prepare = [];
+        if (
+            TemplateService::templateExists($template)
+            && TemplateService::getTemplate($template)->hasSlot($layout, $slot)
+        ) {
             $ids = array_keys($_POST['move']);
+
+            $counter = 0;
             foreach ($ids as $id) {
                 if (isset($boxes[$id])) {
-                    // copy data
-                    $prepare[$id] = $boxes[$id];
-
-                    // remove unused
-                    unset($prepare[$id]['id'], $prepare[$id]['title']);
-
-                    // set new values
-                    $prepare[$id]['template'] = $active_template_id;
-                    $prepare[$id]['layout'] = $selected_layout;
-
-                    // convert slot if required
-                    if (isset($_POST['convert_slots'])) {
-                        if (!isset($flipped_slots[$prepare[$id]['slot']])) {
-                            $prepare[$id]['slot'] = $slots[0];
-                        }
-                    }
+                    DB::update('box', 'id=' . DB::val($id), [
+                        'template' => $template,
+                        'layout' => $layout,
+                        'slot' => $slot
+                    ]);
+                    ++$counter;
                 }
             }
-
-            // save
-            if (count($prepare) > 0) {
-                foreach ($prepare as $k => $v) {
-                    DB::update('box', 'id=' . $k, $v);
-                }
-                // redirect
+            if($counter>0) {
                 Response::redirect('index.php?p=content-boxes&moved');
             }
         }
