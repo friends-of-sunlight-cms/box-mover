@@ -5,9 +5,9 @@
     "authors": [
         {"name": "Friends of Sunlight CMS", "url": "https://github.com/friends-of-sunlight-cms/"}
     ],
-    "version": "1.0.1",
+    "version": "1.1.0",
     "environment": {
-        "system": "^8.0"
+        "system": "^8.1"
     },
     "langs": {
         "boxmover": "lang"

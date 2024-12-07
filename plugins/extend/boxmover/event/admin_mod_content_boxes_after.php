@@ -7,6 +7,7 @@ use Sunlight\Message;
 use Sunlight\Plugin\TemplateService;
 use Sunlight\Router;
 use Sunlight\Template;
+use Sunlight\Util\Form;
 use Sunlight\Util\Request;
 use Sunlight\Util\Response;
 use Sunlight\Xsrf;
@@ -34,12 +35,19 @@ return new class {
         $tableHead = !$hasMovableBoxes ? '' : _buffer(function () { ?>
             <thead>
             <tr>
-                <th><input type="checkbox" class="selectall" onchange="var that=this;$('table.boxmover-list input[type=checkbox][name^=move]').each(function() {this.checked=that.checked;});" checked></th>
+                <th>
+                    <?= Form::input('checkbox', null, null, [
+                        'onchange' => 'var that=this;$(\'table.boxmover-list input[type=checkbox][name^=move]\').each(function() {this.checked=that.checked;});',
+                        'checked' => true,
+                        'class' => 'selectall',
+                    ]) ?>
+                </th>
                 <th><?= _lang('boxmover.row.title') ?></th>
                 <th><?= _lang('boxmover.current.location') ?></th>
             </tr>
             </thead>
-        <?php });
+            <?php
+        });
 
         $output = _buffer(function () use ($tableHead, $activeTemplate, $hasMovableBoxes, $boxes) { ?>
             <form id='boxmover_form' name='boxmover_form' action='' method='post'>
@@ -48,12 +56,17 @@ return new class {
                     <?= $tableHead ?>
                     <tbody>
 
-                    <?php if ($hasMovableBoxes): ?>
+                    <?php
+                    if ($hasMovableBoxes): ?>
 
-                    <?php foreach ($boxes as $box): ?>
-                        <?php $boxParent = Core::$pluginManager->getPlugins()->getTemplate($box['template']); ?>
+                    <?php
+                    foreach ($boxes as $box): ?>
+                        <?php
+                        $boxParent = Core::$pluginManager->getPlugins()->getTemplate($box['template']); ?>
                         <tr>
-                            <td><input id="move_<?= $box['id'] ?>" type="checkbox" name="move[<?= $box['id'] ?>]" value="1" checked></td>
+                            <td>
+                                <?= Form::input('checkbox', 'move[' . $box['id'] . ']', '1', ['id' => 'move_' . $box['id'], 'checked' => true]) ?>
+                            </td>
                             <td><label for="move_<?= $box['id'] ?>"><?= $box['title'] ?></label></td>
                             <td>
                                 <label for="move_<?= $box['id'] ?>">
@@ -62,7 +75,8 @@ return new class {
                                 </label>
                             </td>
                         </tr>
-                    <?php endforeach; ?>
+                    <?php
+                    endforeach; ?>
 
                     </tbody>
                     <tfoot>
@@ -81,15 +95,18 @@ return new class {
                         </td>
                     </tr>
                     </tfoot>
-                <?php else: ?>
+                <?php
+                else: ?>
                     <tr>
                         <td colspan="3"><?= Message::warning(_lang('boxmover.no.boxes')) ?></td>
                     </tr>
-                <?php endif; ?>
+                <?php
+                endif; ?>
                 </table>
                 <?= Xsrf::getInput() ?>
             </form>
-        <?php });
+            <?php
+        });
 
         $args['output'] .= $output;
     }
@@ -113,12 +130,12 @@ return new class {
                     DB::update('box', 'id=' . DB::val($id), [
                         'template' => $template,
                         'layout' => $layout,
-                        'slot' => $slot
+                        'slot' => $slot,
                     ]);
                     ++$counter;
                 }
             }
-            if($counter>0) {
+            if ($counter > 0) {
                 Response::redirect('index.php?p=content-boxes&moved');
             }
         }
